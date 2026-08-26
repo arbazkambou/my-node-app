@@ -1,24 +1,40 @@
-name: CI
+name: Deploy to EC2
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
-          node-version: "20"
-          cache: "npm"
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          source: "."
+          target: "~/app"
+          rm: true
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build Docker image
-        run: docker build -t arbaz-node-app:ci .
+      - name: Build and run app on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            cd ~/app
+            docker build -t my-node-app:latest .
+            docker stop my-node-app || true
+            docker rm my-node-app || true
+            docker run -d --name my-node-app --restart unless-stopped -p 80:3000 my-node-app:latest
