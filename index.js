@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Hello from Express!",
+    message: "Hello from Server!",
     status: "ok",
   });
 });
