@@ -1,0 +1,32 @@
+x-app: &app
+  build: .
+  image: docker-express-app
+  restart: unless-stopped
+
+services:
+  app-3000:
+    <<: *app
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      APP_NAME: "app 1"
+      HOST_PORT: "3000"
+
+  app-3001:
+    <<: *app
+    ports:
+      - "3001:3000"
+    environment:
+      PORT: "3000"
+      APP_NAME: "app 2"
+      HOST_PORT: "3001"
+
+  app-3002:
+    <<: *app
+    ports:
+      - "3002:3000"
+    environment:
+      PORT: "3000"
+      APP_NAME: "app 3"
+      HOST_PORT: "3002"
